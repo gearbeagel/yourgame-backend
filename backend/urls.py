@@ -24,7 +24,6 @@ import servercheck.views
 urlpatterns = [
     path('', rpg_app.views.index, name='index'),
     path('admin/', admin.site.urls),
-    path('servercheck/', include('servercheck.urls')),
     path('api/', include('rpg_app.urls')),
     path('api-auth/', include('rest_framework.urls')),
 ]
