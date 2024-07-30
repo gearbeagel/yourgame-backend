@@ -19,10 +19,10 @@ from django.urls import path
 from django.urls.conf import include
 
 import rpg_app.views
-import servercheck.views
 
 urlpatterns = [
     path('', rpg_app.views.index, name='index'),
+    path('servercheck/', include("servercheck.urls")),
     path('admin/', admin.site.urls),
     path('api/', include('rpg_app.urls')),
     path('api-auth/', include('rest_framework.urls')),

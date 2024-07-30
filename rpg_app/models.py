@@ -49,7 +49,7 @@ class ChatLog(models.Model):
     title = models.CharField(max_length=100)
     story = models.ForeignKey('Story', related_name='chat_logs', on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
-    message_data = models.JSONField(default=dict, blank=True)
+    message_data = models.JSONField(default=dict, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
