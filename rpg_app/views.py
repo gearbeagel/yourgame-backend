@@ -7,17 +7,17 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt, csrf_protect
-from rest_framework import viewsets, serializers, status
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.reverse import reverse
+from rest_framework.views import APIView
 
 from .models import Character, Setting, Plot, Story, ChatLog
 from .serializers import CharacterSerializer, SettingSerializer, PlotSerializer, StorySerializer, ChatLogSerializer
-
-openai.api_key = os.environ['openai_api_key']
+from .utils import generate_initial_prompt
 
 
 def index(request):
@@ -97,6 +97,44 @@ class ChatLogViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance)
         print("Debug: Updated chat log and saved changes.")
         return Response(serializer.data)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CreateStoryView(APIView):
+    def post(self, request):
+        title = request.data.get('title')
+        plot = request.data.get('plot')
+        characters = request.data.get('characters')
+        setting = request.data.get('setting')
+        user = request.user
+
+        # Create the story, characters, and setting
+        story = Story.objects.create(title=title, user=user)
+        Plot.objects.create(summary=plot, story=story)
+        Character.objects.create(story=story, description=characters)
+        Setting.objects.create(story=story, description=setting)
+
+        # Generate the initial AI prompt
+        initial_prompt_text = generate_initial_prompt(title, plot, characters, setting)
+
+        # Create the initial chat log
+        chat_log = ChatLog.objects.create(
+            title=title,
+            story=story,
+            message_data={
+                "0": {
+                    "timestamp": "2024-01-01T00:00:00Z",  # Use a realistic timestamp
+                    "sender": "ai",
+                    "contents": initial_prompt_text
+                }
+            }
+        )
+
+        # Return the created story and initial prompt
+        return Response({
+            'story_id': story.id,
+            'initial_prompt': initial_prompt_text
+        }, status=status.HTTP_201_CREATED)
 
 
 @ensure_csrf_cookie

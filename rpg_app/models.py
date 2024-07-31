@@ -20,30 +20,28 @@ class Story(models.Model):
 
 
 class Character(models.Model):
-    name = models.CharField(max_length=100)
-    story = models.ForeignKey(Story, on_delete=models.CASCADE, related_name='characters')
     description = models.TextField()
+    story = models.ForeignKey(Story, on_delete=models.CASCADE, related_name='characters')
 
     def __str__(self):
-        return self.name
+        return self.description
 
 
 class Setting(models.Model):
-    name = models.CharField(max_length=100)
     description = models.TextField()
     story = models.ForeignKey(Story, on_delete=models.CASCADE, related_name='settings')
 
     def __str__(self):
-        return self.name
+        return self.description
 
 
 class Plot(models.Model):
-    title = models.CharField(max_length=100)
     summary = models.TextField()
     story = models.ForeignKey(Story, on_delete=models.CASCADE, related_name='plots')
 
     def __str__(self):
-        return self.title
+        return self.summary
+
 
 class ChatLog(models.Model):
     title = models.CharField(max_length=100)

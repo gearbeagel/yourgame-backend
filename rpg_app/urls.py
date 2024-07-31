@@ -2,7 +2,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from .views import CharacterViewSet, SettingViewSet, PlotViewSet, StoryViewSet, login_view, logout_view, csrf, \
-    register_view, ChatLogViewSet
+    register_view, ChatLogViewSet, CreateStoryView
 
 router = DefaultRouter()
 router.register(r'characters', CharacterViewSet)
@@ -13,6 +13,7 @@ router.register(r'chatlogs', ChatLogViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('create/', CreateStoryView.as_view(), name='create'),
     path('auth/login/', login_view, name='login'),
     path('auth/logout/', logout_view, name='logout'),
     path('auth/csrf/', csrf, name='csrf'),
