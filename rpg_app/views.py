@@ -4,6 +4,7 @@ import os
 import openai
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.db.models import OuterRef, Subquery
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -30,7 +31,10 @@ class StoryViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return self.queryset.filter(user=self.request.user)
+        latest_chat_log = ChatLog.objects.filter(story=OuterRef('pk')).order_by('-timestamp')
+        return self.queryset.filter(user=self.request.user).annotate(
+            latest_chat_log_timestamp=Subquery(latest_chat_log.values('timestamp')[:1])
+        ).order_by('-latest_chat_log_timestamp')
 
     @action(detail=True, methods=['get'])
     def chat_logs(self, request, pk=None):
